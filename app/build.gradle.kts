@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace = "com.example.students_registration_management"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.students_registration_management"
