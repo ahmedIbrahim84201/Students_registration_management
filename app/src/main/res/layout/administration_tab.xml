@@ -44,11 +44,11 @@
         android:onClick="delete"
         />
     <Button
-        android:id="@+id/updateBtnAdmTab"
+        android:id="@+id/showBtnAdmTab"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Update"
-        android:onClick="update"
+        android:text="Show"
+        android:onClick="show"
         />
     <Button
         android:id="@+id/searchBtnAdmTab"
@@ -57,9 +57,18 @@
         android:text="Search"
         android:onClick="search"
         />
+    <Button
+        android:id="@+id/updateBtnAdmTab"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Update"
+        android:onClick="update"
+        />
     <ListView
         android:id="@+id/listView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"/>
+<!--        android:onClick="update"-->
+
 
 </LinearLayout>
