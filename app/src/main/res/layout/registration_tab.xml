@@ -1,9 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/registration"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-            android:orientation="vertical"
-    >
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <TextView
+        android:id="@+id/msgBoxRegistration"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+    <RadioButton
+        android:id="@+id/maleRadioBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Male"
+        android:textSize="50px"
+        />
+    <RadioButton
+        android:id="@+id/femaleRadioBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Female"
+        android:textSize="50px"
+        />
+
+    <EditText
+        android:id="@+id/studentNameBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Student Name"
+        android:textSize="50px"/>
+
+    <EditText
+        android:id="@+id/studentLastNameBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Student Last Name"
+        android:textSize="50px"/>
+    <Button
+        android:id="@+id/registerBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Register"
+        android:onClick="register"
+        />
+    <Button
+        android:id="@+id/cancelBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        android:onClick="delete"
+        />
+    <Button
+        android:id="@+id/updateBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Update"
+        android:onClick="update"
+        />
+    <Button
+        android:id="@+id/searchBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Search"
+        android:onClick="search"
+        />
 
 </LinearLayout>
