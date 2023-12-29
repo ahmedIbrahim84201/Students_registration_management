@@ -58,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
         registrationListView=findViewById(R.id.registrationListView);
         populateSpinners();
 
-String try1="Hello Daddy";
 
         //Managing tabs
         tabHost=findViewById(android.R.id.tabhost);
