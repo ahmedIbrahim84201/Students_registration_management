@@ -65,26 +65,13 @@
         android:text="Register"
         android:onClick="register"
         />
-    <Button
-        android:id="@+id/cancelBtn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Cancel"
-        android:onClick="delete"
-        />
+
     <Button
         android:id="@+id/updateBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Update"
-        android:onClick="update"
-        />
-    <Button
-        android:id="@+id/searchBtn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Search"
-        android:onClick="search"
+        android:onClick="updateStudent"
         />
     <Button
         android:id="@+id/showBtn"
@@ -92,6 +79,20 @@
         android:layout_height="wrap_content"
         android:text="Show"
         android:onClick="showRegistration"
+        />
+    <Button
+        android:id="@+id/searchBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Search"
+        android:onClick="searchStudent"
+        />
+    <Button
+        android:id="@+id/cancelBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        android:onClick="cancel"
         />
     <ListView
         android:id="@+id/registrationListView"

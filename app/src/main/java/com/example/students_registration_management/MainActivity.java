@@ -21,7 +21,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
+//Ahmed Ibrahim for the search method in the first tab: if the user filled 2 of the options with correct values he can search and find the result
 public class MainActivity extends AppCompatActivity {
     private EditText facultyBox,departmentBox,lecturerBox,studentNameBox,studentLastNameBox;
     private TextView msgBox,msgBoxRegistration;
@@ -33,62 +33,7 @@ public class MainActivity extends AppCompatActivity {
     private RadioButton maleRadioButton,femaleRadioButton;
     private Spinner facultySpinner,departmentSpinner,advisorSpinner;
 
-    private List<String> getDistinctColumnValues(String columnName) {
-        List<String> values = new ArrayList<>();
-        try {
-            database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
-            Cursor cursor = database.rawQuery("SELECT DISTINCT " + columnName + " FROM administration", null);
 
-            // Add label based on the columnName
-            String label;
-            switch (columnName) {
-                case "faculty":
-                    label = "Faculty";
-                    break;
-                case "department":
-                    label = "Department";
-                    break;
-                case "lecturer":
-                    label = "Advisor";
-                    break;
-                default:
-                    label = "Select one...";
-            }
-            values.add(label);
-
-            while (cursor.moveToNext()) {
-                String value = cursor.getString(cursor.getColumnIndexOrThrow(columnName));
-                values.add(value);
-            }
-
-            cursor.close();
-            database.close();
-        } catch (SQLiteException e) {
-            e.printStackTrace();
-        }
-        return values;
-    }
-
-    private void populateSpinners() {
-        List<String> facultyValues = getDistinctColumnValues("faculty");
-        List<String> departmentValues = getDistinctColumnValues("department");
-        List<String> advisorValues = getDistinctColumnValues("lecturer");
-
-        // Create ArrayAdapter and set it to the respective Spinners
-        ArrayAdapter<String> facultyAdapter = null;
-
-        facultyAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, facultyValues);
-        facultyAdapter.setDropDownViewResource(android.R.layout.select_dialog_item);
-        facultySpinner.setAdapter(facultyAdapter);
-
-        ArrayAdapter<String> departmentAdapter = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item, departmentValues);
-        departmentAdapter.setDropDownViewResource(android.R.layout.select_dialog_item);
-        departmentSpinner.setAdapter(departmentAdapter);
-
-        ArrayAdapter<String> advisorAdapter = new ArrayAdapter<>(this , android.R.layout.simple_spinner_item, advisorValues);
-        advisorAdapter.setDropDownViewResource(android.R.layout.select_dialog_item);
-        advisorSpinner.setAdapter(advisorAdapter);
-    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -155,6 +100,39 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        registrationListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Get the clicked item data
+                String selectedItem = (String) parent.getItemAtPosition(position);
+
+                // Parse the data to extract name, lastName, gender, faculty, department, and advisor
+                String[] dataParts = selectedItem.split("\n");
+                String name = dataParts[1].substring(dataParts[1].indexOf(":") + 1).trim();
+                String lastName = dataParts[2].substring(dataParts[2].indexOf(":") + 1).trim();
+                String gender = dataParts[3].substring(dataParts[3].indexOf(":") + 1).trim();
+                String faculty = dataParts[4].substring(dataParts[4].indexOf(":") + 1).trim();
+                String department = dataParts[5].substring(dataParts[5].indexOf(":") + 1).trim();
+                String advisor = dataParts[6].substring(dataParts[6].indexOf(":") + 1).trim();
+
+                // Fill the corresponding fields with the clicked item's data
+                studentNameBox.setText(name);
+                studentLastNameBox.setText(lastName);
+
+                // Set the correct radio button based on gender
+                if (gender.equalsIgnoreCase("Male")) {
+                    maleRadioButton.setChecked(true);
+                } else if (gender.equalsIgnoreCase("Female")) {
+                    femaleRadioButton.setChecked(true);
+                }
+
+                // Set the selected values in the spinners
+                setSpinnerSelection(facultySpinner, faculty);
+                setSpinnerSelection(departmentSpinner, department);
+                setSpinnerSelection(advisorSpinner, advisor);
+            }
+        });
+
         try {
             if (!databaseExist()) {
                 database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
@@ -180,12 +158,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
-    // helper method to check if you have a database
-    private boolean databaseExist(){
-        File dbfile = new File(path);
-        return dbfile.exists();
-    }
     public void show(View V){
         //Opening the Database
         database=SQLiteDatabase.openDatabase(path,null,SQLiteDatabase.CREATE_IF_NECESSARY);
@@ -244,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
             String faculty = facultyBox.getText().toString().toUpperCase().trim();
             String department = departmentBox.getText().toString().toUpperCase().trim();
             String lecturer = lecturerBox.getText().toString().toUpperCase().trim();
-            String lookFor = "SELECT * FROM administration WHERE faculty='" + faculty + "' AND department='" + department + "' AND lecturer='" + lecturer + "'";
+            String lookFor = "SELECT * FROM administration WHERE faculty='" + faculty + "' AND department='" + department + "' OR lecturer='" + lecturer + "'";
             Cursor cursor = database.rawQuery(lookFor, null);
             ArrayList<String> administration = new ArrayList<>();
             ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, administration);
@@ -276,8 +248,12 @@ public class MainActivity extends AppCompatActivity {
         while(cursor.moveToNext()){
             String studentId =cursor.getString(cursor.getColumnIndexOrThrow("studentID"));
             String name =cursor.getString(cursor.getColumnIndexOrThrow("name"));
+            String gender =cursor.getString(cursor.getColumnIndexOrThrow("gender"));
             String lastName =cursor.getString(cursor.getColumnIndexOrThrow("lastName"));
-            String result="StudentID:"+studentId+"\nName: "+name+"\nlast Name: "+lastName;
+            String faculty=cursor.getString(cursor.getColumnIndexOrThrow("faculty"));
+            String department=cursor.getString(cursor.getColumnIndexOrThrow("department"));
+            String advisor=cursor.getString(cursor.getColumnIndexOrThrow("advisor"));
+            String result="StudentID:"+studentId+"\nName: "+name+"\nLast Name: "+lastName+"\n Gender: "+gender+"\n Faculty: "+faculty+"\n Department: "+department+"\n Advisor: "+advisor;
             registration.add(result);
         }
         registrationListView.setAdapter(adapter);
@@ -321,9 +297,150 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
+public void cancel(View V) {
+    try {
+        database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
 
+        // Get the selected item's data
+        String name = studentNameBox.getText().toString().toUpperCase().trim();
+        String lastName = studentLastNameBox.getText().toString().toUpperCase().trim();
 
+        // Check if the student is registered
+        String checkIfExists = "SELECT * FROM registration WHERE name='" + name + "' AND lastName='" + lastName + "'";
+        Cursor cursor = database.rawQuery(checkIfExists, null);
 
+        if (cursor.moveToFirst()) {
+            // Student is registered, proceed with deletion
+            String deleteStudent = "DELETE FROM registration WHERE name='" + name + "' AND lastName='" + lastName + "'";
+            database.execSQL(deleteStudent);
+
+            Toast.makeText(getApplication(), "Registration for " + name + " " + lastName + " has been canceled", Toast.LENGTH_LONG).show();
+        } else {
+            // Student is not registered, show a message
+            Toast.makeText(getApplication(), "Student is not registered", Toast.LENGTH_LONG).show();
+        }
+
+        // Clear input fields and spinners
+        radioGroup.clearCheck();
+        studentNameBox.setText("");
+        studentLastNameBox.setText("");
+        facultySpinner.setSelection(0);
+        departmentSpinner.setSelection(0);
+        advisorSpinner.setSelection(0);
+
+        database.close();
+    } catch (SQLiteException e) {
+        Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
+    }
+}
+    public void  updateStudent(View V){
+        try {
+            database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
+        }catch (Exception e){
+            Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+    public void searchStudent(View V) {
+        try {
+            database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
+
+            String name = studentNameBox.getText().toString().toUpperCase().trim();
+            String lastName = studentLastNameBox.getText().toString().toUpperCase().trim();
+            String lookFor = "SELECT * FROM registration WHERE name='" + name + "' AND lastName='" + lastName + "'";
+
+            Cursor cursor = database.rawQuery(lookFor, null);
+            ArrayList<String> registration = new ArrayList<>();
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, registration);
+
+            while (cursor.moveToNext()) {
+                String studentIdCol = cursor.getString(cursor.getColumnIndexOrThrow("studentID")); // Corrected column name
+                String nameCol = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+                String lastNameCol = cursor.getString(cursor.getColumnIndexOrThrow("lastName"));
+                String genderCol = cursor.getString(cursor.getColumnIndexOrThrow("gender"));
+                String facultyCol = cursor.getString(cursor.getColumnIndexOrThrow("faculty"));
+                String departmentCol = cursor.getString(cursor.getColumnIndexOrThrow("department"));
+                String advisorCol = cursor.getString(cursor.getColumnIndexOrThrow("advisor"));
+                String result = "StudentID:" + studentIdCol + "\nName:" + nameCol + "\nLast Name:" + lastNameCol + "\nGender:" + genderCol + "\nFaculty:" + facultyCol + "\nDepartment: " + departmentCol + "\nAdvisor: " + advisorCol;
+                registration.add(result);
+            }
+            registrationListView.setAdapter(adapter);
+            database.close();
+
+        } catch (Exception e) {
+            Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+//Helper Methods:
+    private boolean databaseExist(){
+        File dbfile = new File(path);
+        return dbfile.exists();
+    }
+    private List<String> getDistinctColumnValues(String columnName) {
+        List<String> values = new ArrayList<>();
+        try {
+            database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
+            Cursor cursor = database.rawQuery("SELECT DISTINCT " + columnName + " FROM administration", null);
+
+            // Add label based on the columnName
+            String label;
+            switch (columnName) {
+                case "faculty":
+                    label = "Faculty";
+                    break;
+                case "department":
+                    label = "Department";
+                    break;
+                case "lecturer":
+                    label = "Advisor";
+                    break;
+                default:
+                    label = "Select one...";
+            }
+            values.add(label);
+
+            while (cursor.moveToNext()) {
+                String value = cursor.getString(cursor.getColumnIndexOrThrow(columnName));
+                values.add(value);
+            }
+
+            cursor.close();
+            database.close();
+        } catch (SQLiteException e) {
+            e.printStackTrace();
+        }
+        return values;
+    }
+
+    private void populateSpinners() {
+        List<String> facultyValues = getDistinctColumnValues("faculty");
+        List<String> departmentValues = getDistinctColumnValues("department");
+        List<String> advisorValues = getDistinctColumnValues("lecturer");
+
+        // Create ArrayAdapter and set it to the respective Spinners
+        ArrayAdapter<String> facultyAdapter = null;
+
+        facultyAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, facultyValues);
+        facultyAdapter.setDropDownViewResource(android.R.layout.select_dialog_item);
+        facultySpinner.setAdapter(facultyAdapter);
+
+        ArrayAdapter<String> departmentAdapter = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item, departmentValues);
+        departmentAdapter.setDropDownViewResource(android.R.layout.select_dialog_item);
+        departmentSpinner.setAdapter(departmentAdapter);
+
+        ArrayAdapter<String> advisorAdapter = new ArrayAdapter<>(this , android.R.layout.simple_spinner_item, advisorValues);
+        advisorAdapter.setDropDownViewResource(android.R.layout.select_dialog_item);
+        advisorSpinner.setAdapter(advisorAdapter);
+    }
+
+    private void setSpinnerSelection(Spinner spinner, String value) {
+        ArrayAdapter<String> adapter = (ArrayAdapter<String>) spinner.getAdapter();
+        if (adapter != null) {
+            int position = adapter.getPosition(value);
+            if (position != -1) {
+                spinner.setSelection(position);
+            }
+        }
+    }
 }
 
 
