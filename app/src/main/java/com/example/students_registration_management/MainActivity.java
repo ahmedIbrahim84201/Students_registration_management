@@ -33,9 +33,6 @@ public class MainActivity extends AppCompatActivity {
     private RadioButton maleRadioButton,femaleRadioButton;
     private Spinner facultySpinner,departmentSpinner,advisorSpinner;
 
-
-    
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -144,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
                 database.execSQL(administrationTable);
 
 //                 Creating Registration table
-                String registrationTable = "create table registration (studentID long PRIMARY KEY autoincrement, name text, lastName text,gender text, faculty text, department text, advisor text);";
+                String registrationTable = "create table registration (studentID integer PRIMARY KEY autoincrement, name text, lastName text,gender text, faculty text, department text, advisor text);";
                 database.execSQL(registrationTable);
                 Toast.makeText(getApplication(), "Tables Created", Toast.LENGTH_LONG).show();
                 msgBox.setText("We Have Data In The Tables");
