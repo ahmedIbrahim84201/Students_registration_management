@@ -61,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
         populateSpinners();
 
 
-
         //Managing tabs
         tabHost=findViewById(android.R.id.tabhost);
         tabHost.setup();
