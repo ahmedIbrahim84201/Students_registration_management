@@ -184,9 +184,11 @@ public class MainActivity extends AppCompatActivity {
             departmentBox.setText("");
             lecturerBox.setText("");
             database.close();
+
         }catch (SQLiteException e){
             msgBox.setText(e.getMessage());
         }
+        populateSpinners();
     }
     public void delete(View V){
         try{
@@ -205,6 +207,7 @@ public class MainActivity extends AppCompatActivity {
         }catch (SQLiteException e){
             msgBox.setText(e.getMessage());
         }
+        populateSpinners();
     }
     public void search(View v) {
         try {
@@ -361,6 +364,7 @@ public void cancel(View V) {
             }
             registrationListView.setAdapter(adapter);
             database.close();
+
 
         } catch (Exception e) {
             Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
