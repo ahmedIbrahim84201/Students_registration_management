@@ -34,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
     private Spinner facultySpinner,departmentSpinner,advisorSpinner;
 
 
+    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -146,8 +148,6 @@ public class MainActivity extends AppCompatActivity {
                 String registrationTable = "create table registration (studentID long PRIMARY KEY autoincrement, name text, lastName text,gender text, faculty text, department text, advisor text);";
                 database.execSQL(registrationTable);
                 Toast.makeText(getApplication(), "Tables Created", Toast.LENGTH_LONG).show();
-
-
                 msgBox.setText("We Have Data In The Tables");
             } else {
                 Toast.makeText(getApplication(), "We Have A Database Already", Toast.LENGTH_LONG).show();
