@@ -384,13 +384,7 @@ public void cancel(View V) {
         Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
     }
 }
-    public void  updateStudent(View V){
-        try {
-            database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
-        }catch (Exception e){
-            Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-    }
+
     public void searchStudent(View V) {
         try {
             database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
@@ -549,6 +543,31 @@ public void cancel(View V) {
         show(null);
 
     }
+
+    public void updateStudent(View v) {
+        try {
+            database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
+
+            // Get the input data from your EditText fields
+            String name = studentNameBox.getText().toString().toUpperCase().trim();
+            String lastName = studentLastNameBox.getText().toString().toUpperCase().trim();
+
+            // Execute the update query based on your table structure and conditions
+            String updateQuery = "UPDATE registration SET name='" + name + "', lastName='" + lastName + "' WHERE studentID=studentID";
+            database.execSQL(updateQuery);
+
+            Toast.makeText(getApplication(), "Data Updated", Toast.LENGTH_LONG).show();
+            studentNameBox.setText("");
+            studentLastNameBox.setText("");
+
+
+            database.close();
+            showRegistration(null);
+        } catch (SQLiteException e) {
+            Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
 
 
 }
