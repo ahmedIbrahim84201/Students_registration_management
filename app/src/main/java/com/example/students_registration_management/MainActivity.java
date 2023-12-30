@@ -1,7 +1,6 @@
 package com.example.students_registration_management;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
@@ -17,6 +16,10 @@ import android.widget.Spinner;
 import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,13 +28,14 @@ import java.util.Random;
 public class MainActivity extends AppCompatActivity {
     private EditText facultyBox,departmentBox,lecturerBox,studentNameBox,studentLastNameBox;
     private TextView msgBox,msgBoxRegistration;
-    private ListView listView,registrationListView;
+    private ListView listView,registrationListView,regStudentsListView;
     private String path;
     private RadioGroup radioGroup;
     private SQLiteDatabase database=null;
     private TabHost tabHost;
     private RadioButton maleRadioButton,femaleRadioButton;
     private Spinner facultySpinner,departmentSpinner,advisorSpinner;
+    private boolean shouldShowRegistration = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
         maleRadioButton=findViewById(R.id.maleRadioBtn);
         femaleRadioButton=findViewById(R.id.femaleRadioBtn);
         registrationListView=findViewById(R.id.registrationListView);
+        regStudentsListView=findViewById(R.id.regStudentsListView);
         populateSpinners();
 
 
@@ -77,6 +82,19 @@ public class MainActivity extends AppCompatActivity {
         tabSpec.setContent(R.id.registeredStudents);
         tabSpec.setIndicator("Registered Students",null);
         tabHost.addTab(tabSpec);
+
+        // Adding the OnTabChangeListener
+        tabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+            @Override
+            public void onTabChanged(String tabId) {
+                // Check if the tab changed to "Registered Students"
+                if ("Tab3".equals(tabId)) {
+                    // Call the method to show registered students
+                    showRegistration(null);
+                }
+
+            }
+        });
 
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -131,6 +149,27 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        regStudentsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Get the clicked item data
+                String selectedItem = (String) parent.getItemAtPosition(position);
+
+                // Parse the data to extract student information
+                String[] dataParts = selectedItem.split("\n");
+                String studentId = dataParts[0].substring(dataParts[0].indexOf(":") + 1).trim();
+                String name = dataParts[1].substring(dataParts[1].indexOf(":") + 1).trim();
+                String lastName = dataParts[2].substring(dataParts[2].indexOf(":") + 1).trim();
+                String gender = dataParts[3].substring(dataParts[3].indexOf(":") + 1).trim();
+                String faculty = dataParts[4].substring(dataParts[4].indexOf(":") + 1).trim();
+                String department = dataParts[5].substring(dataParts[5].indexOf(":") + 1).trim();
+                String advisor = dataParts[6].substring(dataParts[6].indexOf(":") + 1).trim();
+
+                // Display student information in a popup frame
+                showStudentInfoPopup(studentId, name, lastName, gender, faculty, department, advisor);
+            }
+        });
+
         try {
             if (!databaseExist()) {
                 database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
@@ -155,6 +194,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void show(View V){
+
         //Opening the Database
         database=SQLiteDatabase.openDatabase(path,null,SQLiteDatabase.CREATE_IF_NECESSARY);
         String data ="select * from administration";
@@ -238,25 +278,37 @@ public class MainActivity extends AppCompatActivity {
     //Second Tab
 
     public void showRegistration(View V){
-        //Opening the Database
-        database=SQLiteDatabase.openDatabase(path,null,SQLiteDatabase.CREATE_IF_NECESSARY);
-        String data ="select * from registration";
-        Cursor cursor=database.rawQuery(data,null);
-        ArrayList<String> registration =new ArrayList<>();
-        ArrayAdapter<String> adapter=new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,registration);
-        while(cursor.moveToNext()){
-            String studentId =cursor.getString(cursor.getColumnIndexOrThrow("studentID"));
-            String name =cursor.getString(cursor.getColumnIndexOrThrow("name"));
-            String gender =cursor.getString(cursor.getColumnIndexOrThrow("gender"));
-            String lastName =cursor.getString(cursor.getColumnIndexOrThrow("lastName"));
-            String faculty=cursor.getString(cursor.getColumnIndexOrThrow("faculty"));
-            String department=cursor.getString(cursor.getColumnIndexOrThrow("department"));
-            String advisor=cursor.getString(cursor.getColumnIndexOrThrow("advisor"));
-            String result="StudentID:"+studentId+"\nName: "+name+"\nLast Name: "+lastName+"\n Gender: "+gender+"\n Faculty: "+faculty+"\n Department: "+department+"\n Advisor: "+advisor;
-            registration.add(result);
+
+
+        try {
+            //Opening the Database
+            database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
+            String data = "select * from registration";
+            Cursor cursor = database.rawQuery(data, null);
+            ArrayList<String> registration = new ArrayList<>();
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, registration);
+            while (cursor.moveToNext()) {
+                String studentId = cursor.getString(cursor.getColumnIndexOrThrow("studentID"));
+                String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+                String gender = cursor.getString(cursor.getColumnIndexOrThrow("gender"));
+                String lastName = cursor.getString(cursor.getColumnIndexOrThrow("lastName"));
+                String faculty = cursor.getString(cursor.getColumnIndexOrThrow("faculty"));
+                String department = cursor.getString(cursor.getColumnIndexOrThrow("department"));
+                String advisor = cursor.getString(cursor.getColumnIndexOrThrow("advisor"));
+                String result = "StudentID:" + studentId + "\nName: " + name + "\nLast Name: " + lastName + "\n Gender: " + gender + "\n Faculty: " + faculty + "\n Department: " + department + "\n Advisor: " + advisor;
+                registration.add(result);
+            }
+            registrationListView.setAdapter(adapter);
+            regStudentsListView.setAdapter(adapter);
+            database.close();
+
         }
-        registrationListView.setAdapter(adapter);
-        database.close();
+        catch(Exception e){
+            Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+
+
+
     }
     public void register(View V){
         try {
@@ -441,6 +493,64 @@ public void cancel(View V) {
             }
         }
     }
+
+    private void showStudentInfoPopup(String studentId, String name, String lastName, String gender, String faculty, String department, String advisor) {
+        // Create a StringBuilder to build the message for the popup
+        StringBuilder popupMessage = new StringBuilder();
+        popupMessage.append("Student ID: ").append(studentId).append("\n");
+        popupMessage.append("Name: ").append(name).append("\n");
+        popupMessage.append("Last Name: ").append(lastName).append("\n");
+        popupMessage.append("Gender: ").append(gender).append("\n");
+        popupMessage.append("Faculty: ").append(faculty).append("\n");
+        popupMessage.append("Department: ").append(department).append("\n");
+        popupMessage.append("Advisor: ").append(advisor);
+
+        // Show the popup message dialog
+        showMessageDialog("Student Information", popupMessage.toString());
+    }
+
+    private void showMessageDialog(String title, String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Do nothing or add any additional action if needed
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    public void updateAdministration(View v) {
+        try {
+            database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
+
+            // Get the input data from your EditText fields
+            String faculty = facultyBox.getText().toString().toUpperCase().trim();
+            String department = departmentBox.getText().toString().toUpperCase().trim();
+            String lecturer = lecturerBox.getText().toString().toUpperCase().trim();
+
+            // Execute the update query based on your table structure and conditions
+            String updateQuery = "UPDATE administration SET faculty='" + faculty + "', department='" + department + "' WHERE lecturer='" + lecturer + "'";
+            database.execSQL(updateQuery);
+
+            Toast.makeText(getApplication(), "Data Updated", Toast.LENGTH_LONG).show();
+            facultyBox.setText("");
+            departmentBox.setText("");
+            lecturerBox.setText("");
+            database.close();
+        } catch (SQLiteException e) {
+            Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+        populateSpinners(); // Update spinners after the data is modified
+        show(null);
+
+    }
+
+
 }
 
 
