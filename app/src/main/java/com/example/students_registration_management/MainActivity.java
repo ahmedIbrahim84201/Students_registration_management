@@ -190,6 +190,8 @@ public class MainActivity extends AppCompatActivity {
             msgBox.setText(e.getMessage());
         }
     }
+
+
     public void show(View V){
         //Opening the Database
         database=SQLiteDatabase.openDatabase(path,null,SQLiteDatabase.CREATE_IF_NECESSARY);
@@ -347,8 +349,6 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
         }
 
-
-
     }
     public void register(View V){
         try {
@@ -458,7 +458,7 @@ public void cancel(View V) {
     }
 
 
-    //Third page
+    //Third tab
 
     private void showStudentInfoPopup(String studentId, String name, String lastName, String gender, String faculty, String department, String advisor) {
         // Create a StringBuilder to build the message for the popup
