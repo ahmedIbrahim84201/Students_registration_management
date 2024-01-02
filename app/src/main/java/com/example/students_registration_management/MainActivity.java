@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private TabHost tabHost;
     private RadioButton maleRadioButton,femaleRadioButton;
     private Spinner facultySpinner,departmentSpinner,advisorSpinner;
-    private boolean shouldShowRegistration = false;
+    private String SID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,6 +128,8 @@ public class MainActivity extends AppCompatActivity {
                 String faculty = dataParts[4].substring(dataParts[4].indexOf(":") + 1).trim();
                 String department = dataParts[5].substring(dataParts[5].indexOf(":") + 1).trim();
                 String advisor = dataParts[6].substring(dataParts[6].indexOf(":") + 1).trim();
+                String ID = dataParts[0].substring(dataParts[0].indexOf(":") + 1).trim();
+                SID=ID;
 
                 // Fill the corresponding fields with the clicked item's data
                 studentNameBox.setText(name);
@@ -300,12 +302,28 @@ public class MainActivity extends AppCompatActivity {
         try {
             database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
 
+            String gender = "";
+            int checkId = radioGroup.getCheckedRadioButtonId();
+
+            if (checkId == R.id.maleRadioBtn) {
+                gender = "Male";
+            } else if (checkId == R.id.femaleRadioBtn) {
+                gender = "Female";
+            } else {
+                Toast.makeText(getApplication(), "It's not funny, there are 2 genders, Pick one..", Toast.LENGTH_LONG).show();
+                return; // Stop further execution if gender is not selected
+            }
+
             // Get the input data from your EditText fields
             String name = studentNameBox.getText().toString().toUpperCase().trim();
             String lastName = studentLastNameBox.getText().toString().toUpperCase().trim();
+            String faculty = facultySpinner.getSelectedItem().toString();
+            String department = departmentSpinner.getSelectedItem().toString();
+            String advisor = advisorSpinner.getSelectedItem().toString();
+
 
             // Execute the update query based on your table structure and conditions
-            String updateQuery = "UPDATE registration SET name='" + name + "', lastName='" + lastName + "' WHERE studentID=studentID";
+            String updateQuery = "UPDATE registration SET name='" + name + "', lastName='" + lastName + "', gender= '" + gender +"', faculty= '" + faculty + "', department= '" + department + "', advisor= '" + advisor + "'  WHERE studentID= '" + SID + "'";
             database.execSQL(updateQuery);
 
             Toast.makeText(getApplication(), "Data Updated", Toast.LENGTH_LONG).show();
@@ -339,6 +357,7 @@ public class MainActivity extends AppCompatActivity {
                 String advisor = cursor.getString(cursor.getColumnIndexOrThrow("advisor"));
                 String result = "StudentID:" + studentId + "\nName: " + name + "\nLast Name: " + lastName + "\n Gender: " + gender + "\n Faculty: " + faculty + "\n Department: " + department + "\n Advisor: " + advisor;
                 registration.add(result);
+
             }
             registrationListView.setAdapter(adapter);
             regStudentsListView.setAdapter(adapter);
@@ -490,6 +509,9 @@ public void cancel(View V) {
         dialog.show();
     }
 //Helper Methods:
+
+
+
     private boolean databaseExist(){
         File dbfile = new File(path);
         return dbfile.exists();
