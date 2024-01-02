@@ -4,12 +4,19 @@ import android.content.DialogInterface;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
@@ -509,7 +516,58 @@ public void cancel(View V) {
         dialog.show();
     }
 //Helper Methods:
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
 
+        // Inflate the custom layout
+        MenuItem menuItem = menu.findItem(R.id.menu_item);
+        View actionView = menuItem.getActionView();
+        if (actionView != null) {
+            TextView textView = actionView.findViewById(R.id.menu_item_text);
+            textView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // Handle the click event
+                    Toast.makeText(MainActivity.this, "Menu Item Clicked", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        return true;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+
+        if (itemId == R.id.action_show_text) {
+            showPopupWindow();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showPopupWindow() {
+        // Create a new PopupWindow
+        PopupWindow popupWindow = new PopupWindow(this);
+
+        // Set the layout for the PopupWindow
+        View popupView = getLayoutInflater().inflate(R.layout.popup_layout, null);
+        TextView popupText = popupView.findViewById(R.id.popup_text);
+        popupText.setText("Your Popup Text");
+
+        // Set the width and height of the PopupWindow
+        popupWindow.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
+        popupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        // Set other properties of the PopupWindow (optional)
+        popupWindow.setFocusable(true);
+        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        // Show the PopupWindow at the center of the screen
+        popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0);
+    }
 
 
     private boolean databaseExist(){
