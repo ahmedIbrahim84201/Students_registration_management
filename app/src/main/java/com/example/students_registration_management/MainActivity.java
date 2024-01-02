@@ -24,7 +24,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-//Ahmed Ibrahim for the search method in the first tab: if the user filled 2 of the options with correct values he can search and find the result
+
 public class MainActivity extends AppCompatActivity {
     private EditText facultyBox,departmentBox,lecturerBox,studentNameBox,studentLastNameBox;
     private TextView msgBox,msgBoxRegistration;
@@ -95,8 +95,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
-
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -141,14 +139,12 @@ public class MainActivity extends AppCompatActivity {
                 } else if (gender.equalsIgnoreCase("Female")) {
                     femaleRadioButton.setChecked(true);
                 }
-
                 // Set the selected values in the spinners
                 setSpinnerSelection(facultySpinner, faculty);
                 setSpinnerSelection(departmentSpinner, department);
                 setSpinnerSelection(advisorSpinner, advisor);
             }
         });
-
         regStudentsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -164,37 +160,37 @@ public class MainActivity extends AppCompatActivity {
                 String faculty = dataParts[4].substring(dataParts[4].indexOf(":") + 1).trim();
                 String department = dataParts[5].substring(dataParts[5].indexOf(":") + 1).trim();
                 String advisor = dataParts[6].substring(dataParts[6].indexOf(":") + 1).trim();
-
                 // Display student information in a popup frame
                 showStudentInfoPopup(studentId, name, lastName, gender, faculty, department, advisor);
             }
         });
-
+        try{
+            database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
+            if(!tableExists(database,"registration")) {
+                String registrationTable = "create table registration (studentID integer PRIMARY KEY autoincrement, name text, lastName text,gender text, faculty text, department text, advisor text);";
+                database.execSQL(registrationTable);
+                Toast.makeText(getApplication(), "Tables Created", Toast.LENGTH_LONG).show();
+                msgBox.setText("Registration table created");
+            }
+        }catch (Exception e){
+            msgBox.setText(e.getMessage());
+        }
         try {
-            if (!databaseExist()) {
+            if(!tableExists(database,"administration")) {
                 database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
                 Toast.makeText(getApplication(), "Database is Created", Toast.LENGTH_LONG).show();
 
                 // Creating Administration table
                 String administrationTable = "create table administration (admID integer PRIMARY KEY autoincrement, faculty text, department text, lecturer text);";
                 database.execSQL(administrationTable);
-
 //                 Creating Registration table
-                String registrationTable = "create table registration (studentID integer PRIMARY KEY autoincrement, name text, lastName text,gender text, faculty text, department text, advisor text);";
-                database.execSQL(registrationTable);
-                Toast.makeText(getApplication(), "Tables Created", Toast.LENGTH_LONG).show();
-                msgBox.setText("We Have Data In The Tables");
-            } else {
-                Toast.makeText(getApplication(), "We Have A Database Already", Toast.LENGTH_LONG).show();
+                msgBox.setText("Administration table created");
             }
         } catch (Exception e) {
             msgBox.setText(e.getMessage());
         }
-
     }
-
     public void show(View V){
-
         //Opening the Database
         database=SQLiteDatabase.openDatabase(path,null,SQLiteDatabase.CREATE_IF_NECESSARY);
         String data ="select * from administration";
@@ -236,7 +232,6 @@ public class MainActivity extends AppCompatActivity {
             String faculty=facultyBox.getText().toString().toUpperCase().trim();
             String department=departmentBox.getText().toString().toUpperCase().trim();
             String lecturer=lecturerBox.getText().toString().toUpperCase().trim();
-//            String remove = "DELETE FROM administration";
             String remove="delete from administration where faculty='"+faculty+"' AND  department='"+department+"' AND lecturer='"+lecturer+"'";
             database.execSQL(remove);
             Toast.makeText(getApplication(),lecturer +" from department:"+department+" in faculty:"+faculty+" has been deleted",Toast.LENGTH_LONG).show();
@@ -272,11 +267,56 @@ public class MainActivity extends AppCompatActivity {
             msgBox.setText(e.getMessage());
         }
     }
+    public void updateAdministration(View v) {
+        try {
+            database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
 
-    public void update(View V) {}
+            // Get the input data from your EditText fields
+            String faculty = facultyBox.getText().toString().toUpperCase().trim();
+            String department = departmentBox.getText().toString().toUpperCase().trim();
+            String lecturer = lecturerBox.getText().toString().toUpperCase().trim();
+
+            // Execute the update query based on your table structure and conditions
+            String updateQuery = "UPDATE administration SET faculty='" + faculty + "', department='" + department + "' WHERE lecturer='" + lecturer + "'";
+            database.execSQL(updateQuery);
+
+            Toast.makeText(getApplication(), "Data Updated", Toast.LENGTH_LONG).show();
+            facultyBox.setText("");
+            departmentBox.setText("");
+            lecturerBox.setText("");
+            database.close();
+        } catch (SQLiteException e) {
+            Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+        populateSpinners(); // Update spinners after the data is modified
+        show(null);
+
+    }
 
     //Second Tab
+    public void updateStudent(View v) {
+        try {
+            database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
 
+            // Get the input data from your EditText fields
+            String name = studentNameBox.getText().toString().toUpperCase().trim();
+            String lastName = studentLastNameBox.getText().toString().toUpperCase().trim();
+
+            // Execute the update query based on your table structure and conditions
+            String updateQuery = "UPDATE registration SET name='" + name + "', lastName='" + lastName + "' WHERE studentID=studentID";
+            database.execSQL(updateQuery);
+
+            Toast.makeText(getApplication(), "Data Updated", Toast.LENGTH_LONG).show();
+            studentNameBox.setText("");
+            studentLastNameBox.setText("");
+
+
+            database.close();
+            showRegistration(null);
+        } catch (SQLiteException e) {
+            Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
     public void showRegistration(View V){
 
 
@@ -416,6 +456,39 @@ public void cancel(View V) {
             Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
+
+
+    //Third page
+
+    private void showStudentInfoPopup(String studentId, String name, String lastName, String gender, String faculty, String department, String advisor) {
+        // Create a StringBuilder to build the message for the popup
+        StringBuilder popupMessage = new StringBuilder();
+        popupMessage.append("Student ID: ").append(studentId).append("\n");
+        popupMessage.append("Name: ").append(name).append("\n");
+        popupMessage.append("Last Name: ").append(lastName).append("\n");
+        popupMessage.append("Gender: ").append(gender).append("\n");
+        popupMessage.append("Faculty: ").append(faculty).append("\n");
+        popupMessage.append("Department: ").append(department).append("\n");
+        popupMessage.append("Advisor: ").append(advisor);
+
+        // Show the popup message dialog
+        showMessageDialog("Student Information", popupMessage.toString());
+    }
+
+    private void showMessageDialog(String title, String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Do nothing or add any additional action if needed
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
 //Helper Methods:
     private boolean databaseExist(){
         File dbfile = new File(path);
@@ -488,87 +561,12 @@ public void cancel(View V) {
         }
     }
 
-    private void showStudentInfoPopup(String studentId, String name, String lastName, String gender, String faculty, String department, String advisor) {
-        // Create a StringBuilder to build the message for the popup
-        StringBuilder popupMessage = new StringBuilder();
-        popupMessage.append("Student ID: ").append(studentId).append("\n");
-        popupMessage.append("Name: ").append(name).append("\n");
-        popupMessage.append("Last Name: ").append(lastName).append("\n");
-        popupMessage.append("Gender: ").append(gender).append("\n");
-        popupMessage.append("Faculty: ").append(faculty).append("\n");
-        popupMessage.append("Department: ").append(department).append("\n");
-        popupMessage.append("Advisor: ").append(advisor);
-
-        // Show the popup message dialog
-        showMessageDialog("Student Information", popupMessage.toString());
+    private boolean tableExists(SQLiteDatabase db, String tableName) {
+        Cursor cursor = db.query("sqlite_master", new String[]{"name"}, "type='table' AND name=?", new String[]{tableName}, null, null, null);
+        boolean exists = cursor.moveToFirst();
+        cursor.close();
+        return exists;
     }
-
-    private void showMessageDialog(String title, String message) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(title)
-                .setMessage(message)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        // Do nothing or add any additional action if needed
-                    }
-                });
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
-
-    public void updateAdministration(View v) {
-        try {
-            database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
-
-            // Get the input data from your EditText fields
-            String faculty = facultyBox.getText().toString().toUpperCase().trim();
-            String department = departmentBox.getText().toString().toUpperCase().trim();
-            String lecturer = lecturerBox.getText().toString().toUpperCase().trim();
-
-            // Execute the update query based on your table structure and conditions
-            String updateQuery = "UPDATE administration SET faculty='" + faculty + "', department='" + department + "' WHERE lecturer='" + lecturer + "'";
-            database.execSQL(updateQuery);
-
-            Toast.makeText(getApplication(), "Data Updated", Toast.LENGTH_LONG).show();
-            facultyBox.setText("");
-            departmentBox.setText("");
-            lecturerBox.setText("");
-            database.close();
-        } catch (SQLiteException e) {
-            Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-        populateSpinners(); // Update spinners after the data is modified
-        show(null);
-
-    }
-
-    public void updateStudent(View v) {
-        try {
-            database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
-
-            // Get the input data from your EditText fields
-            String name = studentNameBox.getText().toString().toUpperCase().trim();
-            String lastName = studentLastNameBox.getText().toString().toUpperCase().trim();
-
-            // Execute the update query based on your table structure and conditions
-            String updateQuery = "UPDATE registration SET name='" + name + "', lastName='" + lastName + "' WHERE studentID=studentID";
-            database.execSQL(updateQuery);
-
-            Toast.makeText(getApplication(), "Data Updated", Toast.LENGTH_LONG).show();
-            studentNameBox.setText("");
-            studentLastNameBox.setText("");
-
-
-            database.close();
-            showRegistration(null);
-        } catch (SQLiteException e) {
-            Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-    }
-
-
 
 }
 
