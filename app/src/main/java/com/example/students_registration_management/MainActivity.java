@@ -9,6 +9,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
     private Spinner facultySpinner,departmentSpinner,advisorSpinner;
     private String SID;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
         File myDbPath=getApplication().getFilesDir();
         path = myDbPath+"/"+"AdministrationDatabase";//Name of Database
+        //Connecting java Variables with XML files IDs
         facultyBox=findViewById(R.id.facultyBox);
         departmentBox=findViewById(R.id.departmentBox);
         lecturerBox=findViewById(R.id.lecturerBox);
@@ -173,6 +177,7 @@ public class MainActivity extends AppCompatActivity {
                 showStudentInfoPopup(studentId, name, lastName, gender, faculty, department, advisor);
             }
         });
+        //try catch and its content to Create the Registration table
         try{
             database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
             if(!tableExists(database,"registration")) {
@@ -184,11 +189,11 @@ public class MainActivity extends AppCompatActivity {
         }catch (Exception e){
             msgBox.setText(e.getMessage());
         }
+        //try catch and its content to Create the Administration table
         try {
             if(!tableExists(database,"administration")) {
                 database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
                 Toast.makeText(getApplication(), "Database is Created", Toast.LENGTH_LONG).show();
-
                 // Creating Administration table
                 String administrationTable = "create table administration (admID integer PRIMARY KEY autoincrement, faculty text, department text, lecturer text);";
                 database.execSQL(administrationTable);
@@ -220,18 +225,24 @@ public class MainActivity extends AppCompatActivity {
     }
     public void add(View V){
         try {
+            //Add method connects the input of the user with the database, so when the user gives variables the data gets inserted into the table
             database=SQLiteDatabase.openDatabase(path,null,SQLiteDatabase.CREATE_IF_NECESSARY);
+            //toUpperCase to keep all data the same size, trim to remove extra spaces at the end of the text
             String faculty=facultyBox.getText().toString().toUpperCase().trim();
             String department=departmentBox.getText().toString().toUpperCase().trim();
             String lecturer=lecturerBox.getText().toString().toUpperCase().trim();
+            if (faculty.isEmpty() || department.isEmpty() || lecturer.isEmpty() ) {
+                Toast.makeText(getApplication(), "Please fill in all the fields", Toast.LENGTH_LONG).show();
+            } else {
             String input="insert into administration (faculty, department, lecturer) values ('"+faculty+"','"+department+"','"+lecturer+"')";
             database.execSQL(input);
             Toast.makeText(getApplication(),"Data Inserted",Toast.LENGTH_LONG).show();
+            //Setting text fields to empty when the user press on "ADD" button
             facultyBox.setText("");
             departmentBox.setText("");
             lecturerBox.setText("");
             database.close();
-
+            }
         }catch (SQLiteException e){
             msgBox.setText(e.getMessage());
         }
@@ -239,13 +250,16 @@ public class MainActivity extends AppCompatActivity {
     }
     public void delete(View V){
         try{
+            //Delete method connects the input of the user with the database, so when the user gives variables the data gets Deleted from the table
             database=SQLiteDatabase.openDatabase(path,null,SQLiteDatabase.CREATE_IF_NECESSARY);
+            //toUpperCase to keep all data the same size, trim to remove extra spaces at the end of the text
             String faculty=facultyBox.getText().toString().toUpperCase().trim();
             String department=departmentBox.getText().toString().toUpperCase().trim();
             String lecturer=lecturerBox.getText().toString().toUpperCase().trim();
             String remove="delete from administration where faculty='"+faculty+"' AND  department='"+department+"' AND lecturer='"+lecturer+"'";
             database.execSQL(remove);
             Toast.makeText(getApplication(),lecturer +" from department:"+department+" in faculty:"+faculty+" has been deleted",Toast.LENGTH_LONG).show();
+            //Setting text fields to empty when the user press on "Delete" button
             facultyBox.setText("");
             departmentBox.setText("");
             lecturerBox.setText("");
@@ -258,6 +272,7 @@ public class MainActivity extends AppCompatActivity {
     public void search(View v) {
         try {
             database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
+            // Get the input data from your EditText fields
             String faculty = facultyBox.getText().toString().toUpperCase().trim();
             String department = departmentBox.getText().toString().toUpperCase().trim();
             String lecturer = lecturerBox.getText().toString().toUpperCase().trim();
@@ -286,7 +301,9 @@ public class MainActivity extends AppCompatActivity {
             String faculty = facultyBox.getText().toString().toUpperCase().trim();
             String department = departmentBox.getText().toString().toUpperCase().trim();
             String lecturer = lecturerBox.getText().toString().toUpperCase().trim();
-
+            if (faculty.isEmpty() || department.isEmpty() || lecturer.isEmpty() ) {
+                Toast.makeText(getApplication(), "Please fill in all the fields", Toast.LENGTH_LONG).show();
+            } else {
             // Execute the update query based on your table structure and conditions
             String updateQuery = "UPDATE administration SET faculty='" + faculty + "', department='" + department + "' WHERE lecturer='" + lecturer + "'";
             database.execSQL(updateQuery);
@@ -296,6 +313,7 @@ public class MainActivity extends AppCompatActivity {
             departmentBox.setText("");
             lecturerBox.setText("");
             database.close();
+            }
         } catch (SQLiteException e) {
             Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
         }
@@ -311,7 +329,7 @@ public class MainActivity extends AppCompatActivity {
 
             String gender = "";
             int checkId = radioGroup.getCheckedRadioButtonId();
-
+            //If statement to check if the user is a male or female
             if (checkId == R.id.maleRadioBtn) {
                 gender = "Male";
             } else if (checkId == R.id.femaleRadioBtn) {
@@ -328,7 +346,9 @@ public class MainActivity extends AppCompatActivity {
             String department = departmentSpinner.getSelectedItem().toString();
             String advisor = advisorSpinner.getSelectedItem().toString();
 
-
+            if(name.isEmpty() || lastName.isEmpty() || faculty=="Faculty" || department=="Department" || advisor=="Advisor"){
+                Toast.makeText(getApplication(), "You forgot one or more variable", Toast.LENGTH_LONG).show();
+            }else{
             // Execute the update query based on your table structure and conditions
             String updateQuery = "UPDATE registration SET name='" + name + "', lastName='" + lastName + "', gender= '" + gender +"', faculty= '" + faculty + "', department= '" + department + "', advisor= '" + advisor + "'  WHERE studentID= '" + SID + "'";
             database.execSQL(updateQuery);
@@ -337,16 +357,14 @@ public class MainActivity extends AppCompatActivity {
             studentNameBox.setText("");
             studentLastNameBox.setText("");
 
-
             database.close();
             showRegistration(null);
+            }
         } catch (SQLiteException e) {
             Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
     public void showRegistration(View V){
-
-
         try {
             //Opening the Database
             database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
@@ -377,6 +395,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
     public void register(View V){
+        //If statement for the gender to make sure one of the radio buttons are selected
         try {
             Random random = new Random();
             long studentID = 1000000000L + random.nextInt(900000000); // Generate a random 10-digit number
@@ -399,17 +418,22 @@ public class MainActivity extends AppCompatActivity {
             String faculty = facultySpinner.getSelectedItem().toString();
             String department = departmentSpinner.getSelectedItem().toString();
             String advisor = advisorSpinner.getSelectedItem().toString();
-            String input = "insert into registration (studentID, name, lastName,gender,faculty,department,advisor) values ('" + studentID + "','" + name + "','" + lastName + "','" + gender + "','" + faculty + "','" + department + "','" + advisor + "')";
-            database.execSQL(input);
+            //If statement to make sure all text fields are filled
+            if(name.isEmpty() || lastName.isEmpty() || faculty=="Faculty" || department=="Department" || advisor=="Advisor"){
+                Toast.makeText(getApplication(), "You forgot one or more variable", Toast.LENGTH_LONG).show();
+            }else{
+                String input = "insert into registration (studentID, name, lastName,gender,faculty,department,advisor) values ('" + studentID + "','" + name + "','" + lastName + "','" + gender + "','" + faculty + "','" + department + "','" + advisor + "')";
+                database.execSQL(input);
+                Toast.makeText(getApplication(), "Data Inserted", Toast.LENGTH_LONG).show();
+                radioGroup.clearCheck();
+                studentNameBox.setText("");
+                studentLastNameBox.setText("");
+                facultySpinner.setSelection(0);
+                departmentSpinner.setSelection(0);
+                advisorSpinner.setSelection(0);
+                database.close();
+            }
 
-            Toast.makeText(getApplication(), "Data Inserted", Toast.LENGTH_LONG).show();
-            radioGroup.clearCheck();
-            studentNameBox.setText("");
-            studentLastNameBox.setText("");
-            facultySpinner.setSelection(0);
-            departmentSpinner.setSelection(0);
-            advisorSpinner.setSelection(0);
-            database.close();
         } catch (SQLiteException e) {
             Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
         }
@@ -462,7 +486,7 @@ public void cancel(View V) {
             Cursor cursor = database.rawQuery(lookFor, null);
             ArrayList<String> registration = new ArrayList<>();
             ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, registration);
-
+            //Loop to print all of the variables in the table
             while (cursor.moveToNext()) {
                 String studentIdCol = cursor.getString(cursor.getColumnIndexOrThrow("studentID")); // Corrected column name
                 String nameCol = cursor.getString(cursor.getColumnIndexOrThrow("name"));
@@ -476,14 +500,10 @@ public void cancel(View V) {
             }
             registrationListView.setAdapter(adapter);
             database.close();
-
-
         } catch (Exception e) {
             Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
-
-
     //Third tab
 
     private void showStudentInfoPopup(String studentId, String name, String lastName, String gender, String faculty, String department, String advisor) {
@@ -516,71 +536,23 @@ public void cancel(View V) {
         dialog.show();
     }
 //Helper Methods:
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu, menu);
 
-        // Inflate the custom layout
-        MenuItem menuItem = menu.findItem(R.id.menu_item);
-        View actionView = menuItem.getActionView();
-        if (actionView != null) {
-            TextView textView = actionView.findViewById(R.id.menu_item_text);
-            textView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // Handle the click event
-                    Toast.makeText(MainActivity.this, "Menu Item Clicked", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-
-        return true;
-    }
-
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int itemId = item.getItemId();
-
-        if (itemId == R.id.action_show_text) {
-            showPopupWindow();
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void showPopupWindow() {
-        // Create a new PopupWindow
-        PopupWindow popupWindow = new PopupWindow(this);
-
-        // Set the layout for the PopupWindow
-        View popupView = getLayoutInflater().inflate(R.layout.popup_layout, null);
-        TextView popupText = popupView.findViewById(R.id.popup_text);
-        popupText.setText("Your Popup Text");
-
-        // Set the width and height of the PopupWindow
-        popupWindow.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
-        popupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
-
-        // Set other properties of the PopupWindow (optional)
-        popupWindow.setFocusable(true);
-        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
-        // Show the PopupWindow at the center of the screen
-        popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0);
-    }
-
-
-    private boolean databaseExist(){
+    private boolean databaseExist() {
+        // Check if the database file exists at the specified path
         File dbfile = new File(path);
         return dbfile.exists();
     }
+
     private List<String> getDistinctColumnValues(String columnName) {
         List<String> values = new ArrayList<>();
         try {
+            // Open the database
             database = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.CREATE_IF_NECESSARY);
+
+            // Query distinct values from the specified column in the "administration" table
             Cursor cursor = database.rawQuery("SELECT DISTINCT " + columnName + " FROM administration", null);
 
-            // Add label based on the columnName
+            // Add a label based on the columnName
             String label;
             switch (columnName) {
                 case "faculty":
@@ -597,6 +569,7 @@ public void cancel(View V) {
             }
             values.add(label);
 
+            // Iterate through the cursor and add distinct values to the list
             while (cursor.moveToNext()) {
                 String value = cursor.getString(cursor.getColumnIndexOrThrow(columnName));
                 values.add(value);
@@ -611,27 +584,27 @@ public void cancel(View V) {
     }
 
     private void populateSpinners() {
+        // Retrieve distinct values for faculty, department, and advisor
         List<String> facultyValues = getDistinctColumnValues("faculty");
         List<String> departmentValues = getDistinctColumnValues("department");
         List<String> advisorValues = getDistinctColumnValues("lecturer");
 
         // Create ArrayAdapter and set it to the respective Spinners
-        ArrayAdapter<String> facultyAdapter = null;
-
-        facultyAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, facultyValues);
+        ArrayAdapter<String> facultyAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, facultyValues);
         facultyAdapter.setDropDownViewResource(android.R.layout.select_dialog_item);
         facultySpinner.setAdapter(facultyAdapter);
 
-        ArrayAdapter<String> departmentAdapter = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item, departmentValues);
+        ArrayAdapter<String> departmentAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, departmentValues);
         departmentAdapter.setDropDownViewResource(android.R.layout.select_dialog_item);
         departmentSpinner.setAdapter(departmentAdapter);
 
-        ArrayAdapter<String> advisorAdapter = new ArrayAdapter<>(this , android.R.layout.simple_spinner_item, advisorValues);
+        ArrayAdapter<String> advisorAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, advisorValues);
         advisorAdapter.setDropDownViewResource(android.R.layout.select_dialog_item);
         advisorSpinner.setAdapter(advisorAdapter);
     }
 
     private void setSpinnerSelection(Spinner spinner, String value) {
+        // Set the selection of the provided Spinner based on the specified value
         ArrayAdapter<String> adapter = (ArrayAdapter<String>) spinner.getAdapter();
         if (adapter != null) {
             int position = adapter.getPosition(value);
@@ -642,12 +615,53 @@ public void cancel(View V) {
     }
 
     private boolean tableExists(SQLiteDatabase db, String tableName) {
+        // Check if the specified table exists in the database
         Cursor cursor = db.query("sqlite_master", new String[]{"name"}, "type='table' AND name=?", new String[]{tableName}, null, null, null);
         boolean exists = cursor.moveToFirst();
         cursor.close();
         return exists;
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu from the XML resource
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    private void createDialog() {
+        // Create an AlertDialog.Builder instance
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        // Set the title and message for the dialog
+        builder.setTitle("Purpose");
+        builder.setMessage("The Purpose of this app is to add/delete/update new administrators and register/cancel/update students' registration");
+
+        // Set up positive (OK) and negative (Cancel) buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Handle the OK button click event
+                Toast.makeText(MainActivity.this, "OK clicked", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Check if the selected menu item is "Show Dialog"
+        if (item.getItemId() == R.id.menu_item) {
+            // Call the method to create and show the dialog
+            createDialog();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }
 
 
